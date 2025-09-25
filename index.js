@@ -84,9 +84,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Ruta za početnu stranicu
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'website.html'));
+  res.sendFile(path.join(__dirname, 'public', 'website.html'));
 });
 
 app.listen(PORT, ()=> console.log(`Server listening on ${PORT}`));
+
 
 
