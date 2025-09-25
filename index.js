@@ -4,6 +4,7 @@ const RateLimit = require('express-rate-limit');
 const Database = require('better-sqlite3');
 const sanitizeHtml = require('sanitize-html');
 const Filter = require('bad-words');
+const path = require('path');
 
 const db = new Database('./stories.db');
 const app = express();
@@ -77,4 +78,14 @@ app.get('/api/flagged', (req, res) => {
 });
 
 const PORT = process.env.PORT || 4000;
+
+// Serviraj statički HTML
+app.use(express.static(__dirname));
+
+// Ruta za početnu stranicu
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'website.html'));
+});
+
 app.listen(PORT, ()=> console.log(`Server listening on ${PORT}`));
+
