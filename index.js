@@ -6,14 +6,16 @@ const sanitizeHtml = require('sanitize-html');
 const Filter = require('bad-words');
 const path = require('path');
 
-const db = new Database('./stories.db');
+const PORT = process.env.PORT || 4000;
 const app = express();
+const db = new Database('./stories.db');
 const filter = new Filter();
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Simple rate limiter to reduce spam
+// Rate limiter
 const limiter = RateLimit({
   windowMs: 60 * 1000,
   max: 20
@@ -37,7 +39,7 @@ function cleanInput(str){
   return cleaned.trim().slice(0, 2000);
 }
 
-// POST a story (anonymous)
+// API routes
 app.post('/api/stories', (req, res) => {
   try {
     let { username, text, ageConfirmed } = req.body;
@@ -45,24 +47,20 @@ app.post('/api/stories', (req, res) => {
 
     username = cleanInput(username || 'Anon');
     text = cleanInput(text || '');
-
     if (!text) return res.status(400).json({ error: 'Text required' });
 
-    // Basic profanity filter and auto-flag
-    const containsProfanity = filter.isProfane(username) || filter.isProfane(text);
-    const flagged = containsProfanity ? 1 : 0;
+    const flagged = filter.isProfane(username) || filter.isProfane(text) ? 1 : 0;
 
     const stmt = db.prepare('INSERT INTO stories (username, text, flagged) VALUES (?, ?, ?)');
     const info = stmt.run(username, text, flagged);
 
-    return res.json({ ok: true, id: info.lastInsertRowid, flagged });
+    res.json({ ok: true, id: info.lastInsertRowid, flagged });
   } catch (e) {
     console.error(e);
-    return res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
-// Get latest stories (paginated)
 app.get('/api/stories', (req, res) => {
   const limit = Math.min(parseInt(req.query.limit)||20, 50);
   const offset = parseInt(req.query.offset)||0;
@@ -70,24 +68,18 @@ app.get('/api/stories', (req, res) => {
   res.json(rows);
 });
 
-// Admin: get flagged (for simple moderation)
-// In real app require auth
 app.get('/api/flagged', (req, res) => {
   const rows = db.prepare('SELECT * FROM stories WHERE flagged = 1 ORDER BY id DESC').all();
   res.json(rows);
 });
 
-const PORT = process.env.PORT || 4000;
+// Serve React build
+app.use(express.static(path.join(__dirname, 'build')));
 
-// Serviraj statički HTML
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Ruta za početnu stranicu
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'website.html'));
+// Catch-all route to serve React index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
-app.listen(PORT, ()=> console.log(`Server listening on ${PORT}`));
-
-
-
+// Start server
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
