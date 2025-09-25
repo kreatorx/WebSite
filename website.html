@@ -1,0 +1,71 @@
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import './App.css';
+
+function App() {
+  const [stories, setStories] = useState([]);
+  const [username, setUsername] = useState('');
+  const [text, setText] = useState('');
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
+
+  useEffect(() => {
+    fetchStories();
+  }, []);
+
+  const fetchStories = async () => {
+    const res = await axios.get('http://localhost:4000/api/stories?limit=50');
+    setStories(res.data);
+  };
+
+  const submitStory = async (e) => {
+    e.preventDefault();
+    if (!ageConfirmed) return alert('You must confirm your age!');
+    await axios.post('http://localhost:4000/api/stories', { username, text, ageConfirmed });
+    setUsername(''); setText(''); setAgeConfirmed(false);
+    fetchStories();
+  };
+
+  return (
+    <div className="app">
+      <header>
+        <h1>Anon Stories</h1>
+      </header>
+
+      <section className="form-area">
+        <form onSubmit={submitStory}>
+          <input
+            type="text"
+            placeholder="Username (anonymous)"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+          <textarea
+            placeholder="Write your story..."
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+          />
+          <label>
+            <input
+              type="checkbox"
+              checked={ageConfirmed}
+              onChange={(e) => setAgeConfirmed(e.target.checked)}
+            /> I confirm I'm 18+
+          </label>
+          <button type="submit">Post Story</button>
+        </form>
+      </section>
+
+      <section className="feed">
+        {stories.map((story) => (
+          <div key={story.id} className="post">
+            <h3>{story.username}</h3>
+            <p>{story.text}</p>
+            <small>{new Date(story.created_at).toLocaleString()}</small>
+          </div>
+        ))}
+      </section>
+    </div>
+  );
+}
+
+export default App;
