@@ -80,7 +80,7 @@ app.get('/api/flagged', (req, res) => {
 const PORT = process.env.PORT || 4000;
 
 // Serviraj statički HTML
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Ruta za početnu stranicu
 app.get('/', (req, res) => {
@@ -88,4 +88,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, ()=> console.log(`Server listening on ${PORT}`));
+
 
