@@ -1,0 +1,7 @@
+body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 0; }
+.app { max-width: 800px; margin: 20px auto; padding: 10px; }
+header { text-align: center; margin-bottom: 20px; }
+.form-area { background: #fff; padding: 12px; border-radius: 8px; margin-bottom: 20px; }
+input, textarea { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 6px; }
+button { padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; }
+.feed .post { background: #fff; padding: 16px; margin-bottom: 12px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
